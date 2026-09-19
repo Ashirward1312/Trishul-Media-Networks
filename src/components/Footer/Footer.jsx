@@ -96,7 +96,7 @@ const Footer = () => {
 
             <p className="mt-5 text-[#4A4038] font-medium leading-relaxed">
               We create premium advertising solutions across Outdoor, Digital,
-              Design, Audio-Visuals and Branding—focused on clarity, trust and
+              Design, Audio-Visuals and Branding focused on clarity, trust and
               results.
             </p>
 

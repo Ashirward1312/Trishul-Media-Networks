@@ -1,27 +1,30 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "../Images/logo.png";
 
 /* ─── All services for dropdown ─── */
 const servicesMenu = [
-  { name: "AI Services",           path: "/services/ai-services" },
-  { name: "Outdoor Advertising",   path: "/services/outdoor-advertising" },
-  { name: "Digital Marketing",     path: "/services/digital-marketing" },
-  { name: "Personal Branding",     path: "/services/personal-branding" },
-  { name: "Designing Services",    path: "/services/designing" },
-  { name: "Audio Visuals",         path: "/services/audio-visuals" },
-  { name: "Branding & Strategy",   path: "/services/branding-strategy" },
-  { name: "Print Media",           path: "/services/print-media" },
-  { name: "Event Promotion",       path: "/services/event-promotion" },
+  { name: "AI Services", path: "/services/ai-services" },
+  { name: "Outdoor Advertising", path: "/services/outdoor-advertising" },
+  { name: "Digital Marketing", path: "/services/digital-marketing" },
+  { name: "Personal Branding", path: "/services/personal-branding" },
+  { name: "Designing Services", path: "/services/designing" },
+  { name: "Audio Visuals", path: "/services/audio-visuals" },
+  { name: "Branding & Strategy", path: "/services/branding-strategy" },
+  { name: "Print Media", path: "/services/print-media" },
+  { name: "Event Promotion", path: "/services/event-promotion" },
 ];
 
 const Header = () => {
-  const [mobileOpen, setMobileOpen]       = useState(false);
-  const [servicesOpen, setServicesOpen]   = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+
   const dropdownRef = useRef(null);
-  const navigate    = useNavigate();
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   /* Close dropdown on outside click */
   useEffect(() => {
@@ -34,33 +37,68 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleContactClick = () => {
+  /* ✅ IMPORTANT: Route change par menus auto close */
+  useEffect(() => {
     setMobileOpen(false);
+    setServicesOpen(false);
+    setMobileServicesOpen(false);
+  }, [location.pathname]);
+
+  const closeAll = useCallback(() => {
+    setMobileOpen(false);
+    setServicesOpen(false);
+    setMobileServicesOpen(false);
+  }, []);
+
+  /* ✅ FIX: Home click (navigate OR scroll-to-top if already on home) */
+  const handleHomeClick = useCallback(
+    (e) => {
+      // NavLink default navigation ko allow karne ke liye preventDefault mat karo
+      // But if already on "/", manually scroll to top
+      closeAll();
+      if (location.pathname === "/") {
+        // Same route: scroll top (feels like navigation)
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        // optional: prevent default to avoid any redundant navigation
+        e?.preventDefault?.();
+      } else {
+        navigate("/");
+      }
+    },
+    [closeAll, location.pathname, navigate]
+  );
+
+  const handleContactClick = () => {
+    closeAll();
     navigate("/contact");
   };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#F4EDE3]/95 backdrop-blur-md border-b border-[#D8C9B8] shadow-sm">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10">
-
         {/* ═══════════════ TOP BAR ═══════════════ */}
         <div className="h-20 flex items-center justify-between">
-
-          {/* LOGO */}
+          {/* LOGO (✅ Home fix applied) */}
           <Link
             to="/"
-            onClick={() => setMobileOpen(false)}
+            onClick={handleHomeClick}
             className="flex items-center shrink-0"
+            aria-label="Go to Home"
           >
-            <img src={logo} alt="Trishul Media Logo" className="h-12 w-auto object-contain" />
+            <img
+              src={logo}
+              alt="Trishul Media Logo"
+              className="h-12 w-auto object-contain"
+            />
           </Link>
 
           {/* DESKTOP NAV */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
-
+            {/* ✅ Home fix applied */}
             <NavLink
               to="/"
               end
+              onClick={handleHomeClick}
               className={({ isActive }) =>
                 `py-2 text-[14px] font-medium tracking-wide transition-all duration-300 ${
                   isActive ? "text-[#6B4F3A]" : "text-[#4A4038] hover:text-[#6B4F3A]"
@@ -73,12 +111,17 @@ const Header = () => {
             {/* ── Services dropdown ── */}
             <div className="relative" ref={dropdownRef}>
               <button
+                type="button"
                 onClick={() => setServicesOpen((p) => !p)}
                 className="flex items-center gap-1 py-2 text-[14px] font-medium tracking-wide text-[#4A4038] hover:text-[#6B4F3A] transition-all duration-300"
+                aria-expanded={servicesOpen}
+                aria-haspopup="menu"
               >
                 Services
                 <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${servicesOpen ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 transition-transform duration-300 ${
+                    servicesOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
@@ -158,14 +201,16 @@ const Header = () => {
         {/* ═══════════════ MOBILE MENU ═══════════════ */}
         {mobileOpen && (
           <div className="lg:hidden border-t border-[#D8C9B8] py-4 space-y-1">
-
+            {/* ✅ Home fix applied */}
             <NavLink
               to="/"
               end
-              onClick={() => setMobileOpen(false)}
+              onClick={handleHomeClick}
               className={({ isActive }) =>
                 `block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  isActive ? "bg-[#E6D8C8] text-[#6B4F3A]" : "text-[#4A4038] hover:bg-[#EDE3D7]"
+                  isActive
+                    ? "bg-[#E6D8C8] text-[#6B4F3A]"
+                    : "text-[#4A4038] hover:bg-[#EDE3D7]"
                 }`
               }
             >
@@ -175,12 +220,15 @@ const Header = () => {
             {/* ── Mobile Services accordion ── */}
             <div>
               <button
+                type="button"
                 onClick={() => setMobileServicesOpen((p) => !p)}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-[#4A4038] hover:bg-[#EDE3D7] transition"
               >
                 Services
                 <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${mobileServicesOpen ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 transition-transform duration-300 ${
+                    mobileServicesOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
@@ -190,7 +238,7 @@ const Header = () => {
                     <Link
                       key={s.path}
                       to={s.path}
-                      onClick={() => { setMobileOpen(false); setMobileServicesOpen(false); }}
+                      onClick={closeAll}
                       className="block px-3 py-2.5 rounded-lg text-sm font-medium text-[#4A4038] hover:bg-[#EDE3D7] hover:text-[#6B4F3A] transition"
                     >
                       {s.name}
@@ -202,10 +250,12 @@ const Header = () => {
 
             <NavLink
               to="/portfolio"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeAll}
               className={({ isActive }) =>
                 `block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  isActive ? "bg-[#E6D8C8] text-[#6B4F3A]" : "text-[#4A4038] hover:bg-[#EDE3D7]"
+                  isActive
+                    ? "bg-[#E6D8C8] text-[#6B4F3A]"
+                    : "text-[#4A4038] hover:bg-[#EDE3D7]"
                 }`
               }
             >
@@ -214,10 +264,12 @@ const Header = () => {
 
             <NavLink
               to="/case-studies"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeAll}
               className={({ isActive }) =>
                 `block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  isActive ? "bg-[#E6D8C8] text-[#6B4F3A]" : "text-[#4A4038] hover:bg-[#EDE3D7]"
+                  isActive
+                    ? "bg-[#E6D8C8] text-[#6B4F3A]"
+                    : "text-[#4A4038] hover:bg-[#EDE3D7]"
                 }`
               }
             >
@@ -226,10 +278,12 @@ const Header = () => {
 
             <NavLink
               to="/about"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeAll}
               className={({ isActive }) =>
                 `block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  isActive ? "bg-[#E6D8C8] text-[#6B4F3A]" : "text-[#4A4038] hover:bg-[#EDE3D7]"
+                  isActive
+                    ? "bg-[#E6D8C8] text-[#6B4F3A]"
+                    : "text-[#4A4038] hover:bg-[#EDE3D7]"
                 }`
               }
             >
@@ -239,6 +293,7 @@ const Header = () => {
             {/* Mobile CTA */}
             <div className="pt-3 px-4">
               <button
+                type="button"
                 onClick={handleContactClick}
                 className="w-full inline-flex items-center justify-center px-7 py-3 rounded-full text-[13px] font-extrabold
                            text-[#08142E] bg-gradient-to-r from-[#F3D27A] to-[#D4AF37]

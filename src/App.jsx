@@ -19,6 +19,7 @@ import Casestudy from "./components/Casestudy/Casestudy.jsx"
 import Contact from "./components/Contact/Contact.jsx";
 import Why from "./components/Why/Why.jsx";
 import Footer from "./components/Footer/Footer.jsx";
+import FloatingSocial from "./components/Floating/Floating.jsx";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -46,6 +47,7 @@ export default function App() {
     <div className="bg-indigo-950 min-h-screen">
       <ScrollToTop />
       <Header />
+      <FloatingSocial />
 
       {/* pt-20 to offset fixed header */}
       <main className="pt-20">
