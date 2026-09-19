@@ -98,7 +98,7 @@ export default function ClientsSection() {
       id="clients"
     >
       <Helmet>
-        <title>Our Clients in Raipur | SP Advertising</title>
+        <title>Our Clients in Raipur | Trishul Media Networks</title>
         <meta
           name="description"
           content="Our clients and collaborations in Raipur. Trusted by brands across categories for outdoor, digital, print and creative."
